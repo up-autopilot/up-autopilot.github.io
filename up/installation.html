@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="../stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/print.css" media="print">
+    <script src="/javascripts/html-include.js"></script>
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Up Framework</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Introduction</h1>
+        <h2>The Modular Framework for Creating Autopilot Solutions</h2>
+        <a href="https://github.com/up-autopilot/up" class="button"><small>Follow me on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+
+          <h1>
+            Installation
+          </h1>
+          <p>
+            This will guide you throught installation process of the
+            <strong>Up</strong> Framework.<strong>Up</strong> uses the Python
+            3.5. This guide utilizes the <code>pip</code> and
+            <code>virtualenv</code> tools.
+          </p>
+
+          <h2>pip Installation</h2>
+          If you are using Python 2 >=2.7.9 or Python 3 >=3.4 <code>pip</code>
+          is already installed. However if you use lower version of Python you
+          might need to install <code>pip</code>. To check your version of python type:
+          <pre>$ python --version</pre>
+          or
+          <pre>$ python3 --version</pre>
+          If you need to install pip execute following commands:
+          <pre>
+cd ~
+wget https://bootstrap.pypa.io/get-pip.py
+python get-pip.py</pre>
+          <h2>virtualenv Installation</h2>
+          If you do not have virtualenv already installed, execute following:
+          <pre>
+$ pip install virtualenv, virtualenvwrapper</pre>
+          If you get the <code>Permission denied</code> error during
+          installation run the commands with <code>sudo</code> <br/>
+          or append <code>--user</code>.
+
+          <h2>Python 3.5</h2>
+          The <strong>Up</strong> requires Python 3.5. Installation of the
+          Python 3.5 depends on the operating system you are using. However
+          some platforms (such as Raspberry Pi) does not currently offer any
+          other possibility of installing python 3.5 than installing it from
+          source. To install Python 3.5 from source, execute following steps.
+          <p>
+            <pre>
+$ cd ~ <span class="comment"># Move to home dir</span>
+$ wget https://www.python.org/ftp/python/3.5.0/Python-3.5.0.tgz <span class="comment"># Download the source</span>
+$ tar -zxvf Python-3.5.0.tgz <span class="comment"># Extract the source</span>
+$ cd Python-3.5.0 <span class="comment"># Move to extracted folder</span>
+$ ./configure <span class="comment"># Configure, takes few minutes</span>
+$ make <span class="comment"># Build, takes ca. 30 minutes</span>
+$ sudo make install <span class="comment"># Install, takes few minutes</span></pre>
+            Test the installation with <pre>$ python3.5 --version</pre> which should give something like <pre>Python 3.5.0</pre>
+          </p>
+
+          <h2>Creating virtualenv for the <strong>Up</strong></h2>
+            <p>
+              You should have installed Python 3.5, <code>virtualenv</code> and
+              <code>virtualenvwrapper</code>. Now we need to configure the virtualenvwrapper.
+               Add these three lines to your shell startup script
+               (<code>.bashrc</code> or <code>.bash_profile</code>):
+               <pre>
+export WORKON_HOME=$HOME/<span class="modifiable-text">.virtualenvs</span>
+export PROJECT_HOME=$HOME/<span class="modifiable-text">project-folder</span>
+source /usr/local/bin/virtualenvwrapper.sh</pre>
+               The created virtualenvs will be stored in the <code>WORKON_HOME</code>.
+               The <code>PROJECT_HOME</code> will store all the projects. You
+               can use whatever folder name and path you like, just make sure
+               the folders exist.
+            </p>
+            <p>
+              Once you have configured the <code>virtualenv</code> we can
+              create the virtual environment. Execute the following:
+              <pre>
+$ mkproject <span class="modifiable-text">up-env</span> --python=python3.5 <span class="comment"># Creates a virtual environment and project with specified python interpreter</span>
+$ workon <span class="modifiable-text">up-env</span> <span class="comment"># Activates the virtual environment</span></pre>
+              Now you have the virtual env active. If you execute
+              <pre>
+$(up-env) python --version</pre>
+              you should see something like
+              <pre>
+Python 3.5.0</pre>
+            </p>
+
+            <h2>Installing <strong>Up</strong></h2>
+            <p>
+              Once you have created the virtual env, we can install the <strong>Up</strong>. Execute the following:
+              <pre>
+$(up-env) cd /path/to/project <span class="comment"># For example cd ~/projects/up-env</span>
+$(up-env) git clone https://github.com/up-autopilot/up.git up <span class="comment"># Obtain the sources</span>
+$(up-env) cd up
+$(up-env) python setup.py install <span class="comment"># Run the installation script</span></pre>
+              The installation script will install all required dependencies.
+              Once the installation is finished, open python console
+              <pre>
+$(up-env) python</pre>
+              and import the <strong>Up</strong>
+              <pre>
+>>> import up</pre>
+              If there is no error, you have successfully installed
+              <strong>Up</strong>. <strong>Congratulations!</strong>
+            </p>
+            <p>
+              Refer to other sections for more information about how to use the newly installed <strong>Up</strong>.
+            </p>
+        </section>
+        <div w3-include-html="../menu.html"></div>
+        <script>
+        w3IncludeHTML();
+        </script>
+      </div>
+      <footer>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</footer>
+    </div>
+
+
+  </body>
+</html>
