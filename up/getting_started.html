@@ -29,13 +29,13 @@
     <div id="content-wrapper">
       <div class="inner clearfix">
         <section id="main-content">
-          <h2>We're Starting</h2>
+          <h1>We're Starting</h1>
           <p>
             Once you have the <strong>Up</strong> successfully installed, you can begin to
             create autopilots. In this guide we will go through the basics of
             using the <strong></strong>Up framework.
           </p>
-          <h2>Initial Configuration</h2>
+          <h1>Initial Configuration</h1>
           Although we have the <strong>Up</strong> installed, there is a bit
           of configuration which must be done. First of all we need to create
           the configs. Execute the following lines:
@@ -70,6 +70,7 @@ from up.utils.up_loader import UpLoader
 def main():
   up = UpLoader().create()
   try:
+    up.initialize()
     up.run()
   finally:
     up.stop()
@@ -85,12 +86,12 @@ if __name__ == "__main__":
             <code>CMD + C</code> to stop the <strong>Up</strong>.
             Congratulations, <strong>Up</strong> is now ready.
           </p>
-          <h2>Basics</h2>
+          <h1>Basics</h1>
           <p>The previous example didn't do anything particulary amazing.
             It has just printed some messages. Let's do something more
             meaningful, but at first we have to go through the basic
             concepts of the <strong>Up</strong>.</p>
-          <h3>Modules</h3>
+          <h2>Modules</h2>
           <p>
             Modules are the basic build bricks. If you want to controll the
             servos, you use a module, if you want to send message from the
@@ -100,7 +101,7 @@ if __name__ == "__main__":
             For more information about modules please read the
             <a href="/up/modules.html">Modules Guide</a>.
           </p>
-          <h3>Create a Simple Module</h3>
+          <h2>Create a Simple Module</h2>
           Let's create a simple module. One of the features of the
           <strong>Up</strong> is, that your custom modules are automatically
           discovered and instantiated. Only thing you have to do is to specify
@@ -168,9 +169,41 @@ up = UpLoader(<span class="modifiable-text">modules_path='/absolute/path/to/modu
           things with them. Next we will examine the possibilities of
           communication between modules.
         </p>
-        <h3>
-          Commands
-        </h3>
+        <h2>
+          Communication Between Modules
+        </h2>
+        The modules won't be much useful, if there is no built-in mechanism
+        which passes messages between them. Luckily there are two possible ways
+        how communication between modules can be achieved.
+        <h3>Obtaining Reference of Other Module</h3>
+        The first way is used for <strong>one to one</strong> communication
+        model. Any module can obtain reference to any other module if it knows
+        the target module class. Let's create another module. Create the
+        <code>modules/simple_comm_module.py</code> script with following content:
+        <pre>
+from up.base_started_module import BaseStartedModule
+
+from modules.hello_world_module import HelloWorldModule <span class="comment"># import previously created module</span>
+
+
+class SimpleCommModule(BaseStartedModule):
+
+	def __init__(self):
+		super().__init__()
+		self.__hello_world_module = None
+
+	def _execute_start(self):
+		self.__hello_world_module = self.raspilot.get_module(HelloWorldModule) <span class="comment"># obtain the reference to HelloWorldModule</span class="comment">
+		return self.__hello_world_module is not None <span class="comment"># starts only if HelloWorldModule has been found</span class="comment">
+
+	def load(self):
+		return True</pre>
+        <p>
+          The <code>SimpleCommModule</code> has a reference to
+          <code>HelloWorldModule</code> once it is started and can invoke
+          methods of this module. All other modules can be accessed this way.
+        </p>
+        <h3>Publish-Subscribe Bus</h3>
         </section>
         <div w3-include-html="../menu.html"></div>
         <script>
