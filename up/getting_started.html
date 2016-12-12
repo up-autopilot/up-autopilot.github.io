@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="../stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/print.css" media="print">
+    <script src="/javascripts/html-include.js"></script>
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Up Framework</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Getting Started</h1>
+        <h2>The Modular Framework for Creating Autopilot Solutions</h2>
+        <a href="https://github.com/up-autopilot/up" class="button"><small>Follow me on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h2>We're Starting</h2>
+          <p>
+            Once you have the <strong>Up</strong> successfully installed, you can begin to
+            create autopilots. In this guide we will go through the basics of
+            using the <strong></strong>Up framework.
+          </p>
+          <h2>Initial Configuration</h2>
+          Although we have the <strong>Up</strong> installed, there is a bit
+          of configuration which must be done. First of all we need to create
+          the configs. Execute the following lines:
+          <pre>
+$ cd ~
+$ mkdir -p up/config</pre>
+          Now copy these lines to <code>~/up/config/config.cfg</code>
+          <pre>
+[DEFAULT]
+LOG LEVEL = <span class="modifiable-text">DEBUG</span> <span class="comment"># possible values are DEBUG|INFO|WARNING|ERROR|CRITICAL</span>
+LOG PATH = <span class="modifiable-text">path/to/logs/dir</span> <span class="comment"># for example use ~/up/logs</span></pre>
+          <p>
+            This is the top level config file read by the
+            <code>ConfigReader</code> utility (will be discussed later).
+            <h5>Note: The config file is case <em>insensitive</em>. For more
+              information about Python configs read
+              <a href="https://docs.python.org/3.5/library/configparser.html">configparser</a> docs.</h5>
+          </p>
+          <p>
+            Now we can prepare the environment. Following lines will create necessary files and folders.
+          </p>
+          <pre>
+$ workon <span class="modifiable-text">up-env</span> <span class="comment"># use the name of your env</span>
+$(up-env) cdproject <span class="modifiable-text">up-env</span>
+$(up-env) mkdir tutorial
+$(up-env) cd tutorial</pre>
+          <p>
+            Now create a Python script called <code>main.py</code> with the following content:
+            <pre>
+from up.utils.up_loader import UpLoader
+
+def main():
+  up = UpLoader().create()
+  try:
+    up.run()
+  finally:
+    up.stop()
+
+if __name__ == "__main__":
+  main()
+            </pre>
+            and execute the script <pre>python main.py</pre>
+            You should see some log messages about missing Flight Controller
+            and loaded Command Receiver and Executor. You can ignore them for now.
+            But the log messages means the <strong>Up</strong>
+            framework starts up. Now hit <code>CTRL + C</code> or
+            <code>CMD + C</code> to stop the <strong>Up</strong>.
+            Congratulations, <strong>Up</strong> is now ready.
+          </p>
+          <h2>Basics</h2>
+          <p>The previous example didn't do anything particulary amazing.
+            It has just printed some messages. Let's do something more
+            meaningful, but at first we have to go through the basic
+            concepts of the <strong>Up</strong>.</p>
+          <h3>Modules</h3>
+          <p>
+            Modules are the basic build bricks. If you want to controll the
+            servos, you use a module, if you want to send message from the
+            airplane to the ground you use a module.
+          </p>
+          <p>
+            For more information about modules please read the
+            <a href="/up/modules.html">Modules Guide</a>.
+          </p>
+          <h3>Create a Simple Module</h3>
+          Let's create a simple module. One of the features of the
+          <strong>Up</strong> is, that your custom modules are automatically
+          discovered and instantiated. Only thing you have to do is to specify
+          the folder where the sources of the modules are located. Let us
+          create this folder:
+          <pre>
+$(up-env) cdproject up-env
+$(up-env) cd tutorial
+$(up-env) mkdir modules
+$(up-env) touch modules/__init__.py
+          </pre>
+          Now create the file <code>modules/hello_world_module.py</code> with
+          the following content:
+          <pre>
+from up.base_started_module import BaseStartedModule <span class="comment"># import the BaseStartedModule parent</span>
+
+
+class HelloWorldModule(BaseStartedModule): <span class="comment">#create a subclass of the BaseStartedModule</span>
+
+	def _execute_initialization(self): <span class="comment"># called once, before _execute_start</span>
+		self.logger.info("Hello World is initializing") <span class="comment"># every Module has access to the logger object, which writes to the logs</span>
+
+	def _execute_start(self): <span class="comment"># called after _execute_initialization</span>
+		self.logger.info("Hello World is starting")
+		return True <span class="comment"># must return True of False, which indicates whether the startup of the module was successful or not</span>
+
+	def _execute_stop(self): <span class="comment"># called after _execute_start</span>
+		self.logger.info("Hello World is stopping")
+
+	def load(self): <span class="comment"># called while autoloading modules</span>
+		return True <span class="comment"># must return True if the module should be autoloaded, False otherwise</span></pre>
+        <p>
+          We have just created a module. Now the <code>main.py</code> script
+          must be modified. Replace the <pre>
+up = UpLoader().create()</pre>
+          with <pre>
+up = UpLoader(<span class="modifiable-text">modules_path='/absolute/path/to/modules/folder', modules_prefix='modules'</span>).create()</pre>
+        <h5>Note: All files in the specified modules folder are being scanned.
+          Only subclasses of the BaseStartedModule are being autoloaded.</h5>
+        This modification tells the <strong>Up</strong> where to look for the
+        modules.
+        </p>
+        <p>
+          The <code>modules_path</code> is the
+          <strong>absolute</strong> path to modules directory. In context of this
+          tutorial it will be something like
+          <code>/home/username/projects/up-env/tutorial/modules</code>.
+        </p>
+        <p>
+          The <code>modules_prefix</code> is the name of the <strong>Python
+          module</strong> which will be used while loading the modules
+          from the source folder. In context of this tutorial it will be the name of
+          the folder wich holds the custom modules.
+        </p>
+        <p>
+          Now we can run the <code>main.py</code> script. If you examine the
+          logs, you should find messages about <code>HelloWorldModule</code> being started
+          and then that it has started sucessfully. This means that the
+          <code>HelloWorldModule</code> has been discovered and registered
+          within the <strong>Up</strong>. When you stop the
+          <strong>Up</strong> there should be a message about stopping
+          the <code>HelloWorldModule</code>. Congratulations, you have your
+          first module. It does nothing special, but this is the first step.
+          Once you get used to the concept of modules, you can do amazing
+          things with them. Next we will examine the possibilities of
+          communication between modules.
+        </p>
+        <h3>
+          Commands
+        </h3>
+        </section>
+        <div w3-include-html="../menu.html"></div>
+        <script>
+        w3IncludeHTML();
+        </script>
+      </div>
+      <footer>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</footer>
+    </div>
+
+
+  </body>
+</html>
