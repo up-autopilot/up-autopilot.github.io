@@ -35,50 +35,22 @@
             create autopilots. In this guide we will go through the basics of
             using the <strong></strong>Up framework.
           </p>
-          <h1>Initial Configuration</h1>
-          Although we have the <strong>Up</strong> installed, there is a bit
-          of configuration which must be done. First of all we need to create
-          the configs. Execute the following lines:
-          <pre>
-$ cd ~
-$ mkdir -p up/config</pre>
-          Now copy these lines to <code>~/up/config/config.cfg</code>
-          <pre>
-[DEFAULT]
-LOG LEVEL = <span class="modifiable-text">DEBUG</span> <span class="comment"># possible values are DEBUG|INFO|WARNING|ERROR|CRITICAL</span>
-LOG PATH = <span class="modifiable-text">path/to/logs/dir</span> <span class="comment"># for example use ~/up/logs</span></pre>
+          <h1>Creating a New Application</h1>
           <p>
-            This is the top level config file read by the
-            <code>ConfigReader</code> utility (will be discussed later).
-            <h5>Note: The config file is case <em>insensitive</em>. For more
-              information about Python configs read
-              <a href="https://docs.python.org/3.5/library/configparser.html">configparser</a> docs.</h5>
+            First of all we have to create a new application. The <strong>Up</strong>
+            has a console helper, which will do most of the work for us. Move to the project dir:<pre>
+$ workon up-env
+$(up-env) cdproject up-env
+$(up-env) up new --name <span class="modifiable-text">NAME_OF_YOUR_APP</span></pre>
+          The <code>up new</code> will create a new application under <code>./NAME_OF_YOUR_APP</code> with required
+          folder structure and configruation files. We are able to run the new
+          application right now, although it won't do anything usefull.
           </p>
           <p>
-            Now we can prepare the environment. Following lines will create necessary files and folders.
-          </p>
-          <pre>
-$ workon <span class="modifiable-text">up-env</span> <span class="comment"># use the name of your env</span>
-$(up-env) cdproject <span class="modifiable-text">up-env</span>
-$(up-env) mkdir tutorial
-$(up-env) cd tutorial</pre>
-          <p>
-            Now create a Python script called <code>main.py</code> with the following content:
+            To run the application execute the following:
             <pre>
-from up.utils.up_loader import UpLoader
-
-def main():
-  up = UpLoader().create()
-  try:
-    up.initialize()
-    up.run()
-  finally:
-    up.stop()
-
-if __name__ == "__main__":
-  main()
-            </pre>
-            and execute the script <pre>python main.py</pre>
+$(up-env) cd <span class="modifiable-text">NAME_OF_YOUR_APP</span>
+$(up-env) up start <span class="comment"># up s can be used as shourtcut</span></pre>
             You should see some log messages about missing Flight Controller
             and loaded Command Receiver and Executor. You can ignore them for now.
             But the log messages means the <strong>Up</strong>
@@ -105,57 +77,85 @@ if __name__ == "__main__":
           Let's create a simple module. One of the features of the
           <strong>Up</strong> is, that your custom modules are automatically
           discovered and instantiated. Only thing you have to do is to specify
-          the folder where the sources of the modules are located. Let us
-          create this folder:
+          the folder where the sources of the modules are located. However the
+          pregenerated <code>main.py</code> takes care of this. If you examine the file, you will see the following:
           <pre>
-$(up-env) cdproject up-env
-$(up-env) cd tutorial
-$(up-env) mkdir modules
-$(up-env) touch modules/__init__.py
-          </pre>
-          Now create the file <code>modules/hello_world_module.py</code> with
-          the following content:
-          <pre>
-from up.base_started_module import BaseStartedModule <span class="comment"># import the BaseStartedModule parent</span>
+import os
+from up.utils.up_loader import UpLoader
+
+def main():
+  cwd = os.getcwd()
+  modules_path = os.path.join(cwd, 'modules')
+  recorders_path = os.path.join(cwd, 'recorders')
+  fc_path = os.path.join(cwd, 'flight_controller')
+  up = UpLoader(<span class="modifiable-text">modules_path=modules_path, modules_prefix='modules'</span>,
+                recorders_path=recorders_path, recorders_prefix='recorders',
+                flight_controller_path=fc_path, flight_controller_prefix='flight_controller'
+                ).create()
+  try:
+    up.initialize()
+    up.run()
+  finally:
+    up.stop()
+
+if __name__ == "__main__":
+  main()</pre>
+          Content of the script ensures that modules placed under the
+          <code>./modules</code> folder will be correctly instantiated. The
+          <code>modules_path</code>, <code>recorders_path</code> and
+          <code>flight_controller_path</code> tells the <code>UpLoader</code> where
+            to look for the modules, recorders and flight controller
+            (will be presented later). The <code>*_prefix</code> on the other
+            hand specified the Python module which will be used while
+            instantiating the <strong>Up</strong> modules.
+          <p>
+            <h5>Note: All files in the specified modules folder are being scanned.
+            Only subclasses of the BaseStartedModule are being autoloaded.</h5>
+          </p>
+
+          <p>
+            Now we can create the module. Execute the following:
+            <pre>
+$(up-env) up generate module --name <span class="modifiable-text">HelloWorld</span></pre>
+            This creates the <code>modules/hello_world_module.py</code> file with following content:
+            <pre>
+from up.base_started_module import BaseStartedModule
 
 
-class HelloWorldModule(BaseStartedModule): <span class="comment">#create a subclass of the BaseStartedModule</span>
+class HelloWorldModule(BaseStartedModule):
+    def __init__(self):
+        super().__init__()
+
+    def _execute_initialization(self):
+        pass
+
+    def _execute_start(self):
+        return True
+
+    def _execute_stop(self):
+        pass
+
+    def load(self):
+        return True</pre>
+        This is the skeleton of a module. Let's edit this template. Enter the following:
+          <pre>
+from up.base_started_module import BaseStartedModule
+
+
+class HelloWorldModule(BaseStartedModule):
 
 	def _execute_initialization(self): <span class="comment"># called once, before _execute_start</span>
-		self.logger.info("Hello World is initializing") <span class="comment"># every Module has access to the logger object, which writes to the logs</span>
+		self.logger.info("Initialization in progress...") <span class="comment"># every Module has access to the logger object, which writes to the logs</span>
 
 	def _execute_start(self): <span class="comment"># called after _execute_initialization</span>
-		self.logger.info("Hello World is starting")
+		self.logger.info("Hello World")
 		return True <span class="comment"># must return True of False, which indicates whether the startup of the module was successful or not</span>
 
 	def _execute_stop(self): <span class="comment"># called after _execute_start</span>
-		self.logger.info("Hello World is stopping")
+		self.logger.info("Bye!")
 
 	def load(self): <span class="comment"># called while autoloading modules</span>
 		return True <span class="comment"># must return True if the module should be autoloaded, False otherwise</span></pre>
-        <p>
-          We have just created a module. Now the <code>main.py</code> script
-          must be modified. Replace the <pre>
-up = UpLoader().create()</pre>
-          with <pre>
-up = UpLoader(<span class="modifiable-text">modules_path='/absolute/path/to/modules/folder', modules_prefix='modules'</span>).create()</pre>
-        <h5>Note: All files in the specified modules folder are being scanned.
-          Only subclasses of the BaseStartedModule are being autoloaded.</h5>
-        This modification tells the <strong>Up</strong> where to look for the
-        modules.
-        </p>
-        <p>
-          The <code>modules_path</code> is the
-          <strong>absolute</strong> path to modules directory. In context of this
-          tutorial it will be something like
-          <code>/home/username/projects/up-env/tutorial/modules</code>.
-        </p>
-        <p>
-          The <code>modules_prefix</code> is the name of the <strong>Python
-          module</strong> which will be used while loading the modules
-          from the source folder. In context of this tutorial it will be the name of
-          the folder wich holds the custom modules.
-        </p>
         <p>
           Now we can run the <code>main.py</code> script. If you examine the
           logs, you should find messages about <code>HelloWorldModule</code> being started
@@ -179,7 +179,8 @@ up = UpLoader(<span class="modifiable-text">modules_path='/absolute/path/to/modu
         The first way is used for <strong>one to one</strong> communication
         model. Any module can obtain reference to any other module if it knows
         the target module class. Let's create another module. Create the
-        <code>modules/simple_comm_module.py</code> script with following content:
+        <code>SimpleCommModule</code>:
+        <pre>$(up-env) up create module --name HelloWorldModule</pre> with following content:
         <pre>
 from up.base_started_module import BaseStartedModule
 
@@ -193,7 +194,7 @@ class SimpleCommModule(BaseStartedModule):
 		self.__hello_world_module = None
 
 	def _execute_start(self):
-		self.__hello_world_module = self.raspilot.get_module(HelloWorldModule) <span class="comment"># obtain the reference to HelloWorldModule</span class="comment">
+		self.__hello_world_module = self.up.get_module(HelloWorldModule) <span class="comment"># obtain the reference to HelloWorldModule</span class="comment">
 		return self.__hello_world_module is not None <span class="comment"># starts only if HelloWorldModule has been found</span class="comment">
 
 	def load(self):
