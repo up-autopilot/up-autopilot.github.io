@@ -40,8 +40,8 @@
             First of all we have to create a new application. The <strong>Up</strong>
             has a console helper, which will do most of the work for us. Move to the project dir:<pre>
 $ workon up-env
-$(up-env) cdproject up-env
-$(up-env) up new --name <span class="modifiable-text">NAME_OF_YOUR_APP</span></pre>
+$(up-env) cdproject
+$(up-env) up create new --name <span class="modifiable-text">NAME_OF_YOUR_APP</span></pre>
           The <code>up new</code> will create a new application under <code>./NAME_OF_YOUR_APP</code> with required
           folder structure and configruation files. We are able to run the new
           application right now, although it won't do anything usefull.
@@ -127,13 +127,14 @@ class HelloWorldModule(BaseStartedModule):
         super().__init__()
 
     def _execute_initialization(self):
-        pass
+        super()._execute_initialization()
 
     def _execute_start(self):
+        super()._execute_start()
         return True
 
     def _execute_stop(self):
-        pass
+        super()._execute_stop()
 
     def load(self):
         return True</pre>
@@ -145,17 +146,21 @@ from up.base_started_module import BaseStartedModule
 class HelloWorldModule(BaseStartedModule):
 
 	def _execute_initialization(self): <span class="comment"># called once, before _execute_start</span>
-		self.logger.info("Initialization in progress...") <span class="comment"># every Module has access to the logger object, which writes to the logs</span>
+    super()._execute_initialization()
+    self.logger.info("Initialization in progress...") <span class="comment"># every Module has access to the logger object, which writes to the logs</span>
 
 	def _execute_start(self): <span class="comment"># called after _execute_initialization</span>
-		self.logger.info("Hello World")
+    super()._execute_start()
+    self.logger.info("Hello World")
 		return True <span class="comment"># must return True of False, which indicates whether the startup of the module was successful or not</span>
 
 	def _execute_stop(self): <span class="comment"># called after _execute_start</span>
-		self.logger.info("Bye!")
+    super()._execute_stop()
+    self.logger.info("Bye!")
 
 	def load(self): <span class="comment"># called while autoloading modules</span>
 		return True <span class="comment"># must return True if the module should be autoloaded, False otherwise</span></pre>
+        </p>
         <p>
           Now we can run the <code>main.py</code> script. If you examine the
           logs, you should find messages about <code>HelloWorldModule</code> being started
@@ -180,7 +185,7 @@ class HelloWorldModule(BaseStartedModule):
         model. Any module can obtain reference to any other module if it knows
         the target module class. Let's create another module. Create the
         <code>SimpleCommModule</code>:
-        <pre>$(up-env) up create module --name HelloWorldModule</pre> with following content:
+        <pre>$(up-env) up create module --name SimpleComm</pre> with following content:
         <pre>
 from up.base_started_module import BaseStartedModule
 
@@ -205,6 +210,146 @@ class SimpleCommModule(BaseStartedModule):
           methods of this module. All other modules can be accessed this way.
         </p>
         <h3>Publish-Subscribe Bus</h3>
+        The previous example shows the one-to-one model of communication.
+        In some situations this might not be sufficient,
+        therefore the Publish-Subscribe Bus is present in
+        the <strong>Up</strong>. All modules can subscribe and all modules can
+        publish. The messages passed by the bus are called
+        <strong>Commands</strong>.
+        <h2>Commands</h2>
+        This section contains only the very basics of the commands. For more
+        detailed guide see the <a href="/up/commands.html">Commands Guide</a>.
+        The Command is a JSON message with specified structure:
+        <pre>
+{
+  "name": "name.of.the.command",
+  "id": "unique ID",
+  "data": {
+    // content depends on the command type
+  }
+}
+        </pre>
+        The <code>name</code> is used to distinguish between commands and is
+        used when delivering the commands to the subscribers.
+        Therefore the <code>name</code> of the command must be
+        <strong>unique within the application</strong>.
+        <p>
+          Commands are handled by the <code>CommandHandler</code> classes.
+          Let's create such class.
+          <pre>
+$(up-env) up create handler --identifier=<span class="modifiable-text">tutorial.hello-world</span> --name=<span class="modifiable-text">Tutorial</span>
+          </pre>
+          This creates the <code>commands/tutorial_command.py</code> file with following content:
+          <pre>
+from up.commands.command import BaseCommand, BaseCommandHandler
+
+
+class TutorialCommand(BaseCommand):
+    NAME = 'tutorial.hello-world'
+
+    def __init__(self):
+        super().__init__(TutorialCommand.NAME)
+
+
+class TutorialCommandHandler(BaseCommandHandler):
+    def __init__(self):
+        super().__init__()
+
+    def run_action(self, command):
+        if command is None:
+            return None</pre>
+        </p>
+        <p>
+          The TutorialCommand currently does not carry any data. Let us modify
+          it. <strong>Add</strong> the following method to the <code>TutorialCommand</code>:
+          <pre>
+@staticmethod
+def __create_data():
+  return {
+    'text': 'Some Text',
+    'anInteger': 123,
+    'anObject': {
+      'important': True
+    }
+  }
+          </pre>
+          and modify the <code>__init__</code> method of the <code>TutorialCommand</code>:
+          <pre>
+super().__init__(TutorialCommand.NAME, TutorialCommand.__create_data())
+          </pre>
+          Now all the TutorialCommands will cary the specified data. What the data contains is up to you.
+        </p>
+        <p>
+          Command has been created, now we need to subscribe to the bus. Let us create a new module:
+          <pre>
+$(up-env) up create module --name Subscribed</pre>
+        Now add the required imports:<pre>
+from commands.tutorial_command import TutorialCommand, TutorialCommandHandler</pre>
+        and modify the <code>_execute_start</code> method of the <code>SubscribedModule</code>:
+        <pre>
+def _execute_start(self):
+    super()._execute_start()
+    <span class="modifiable-text">self.__command_handle = self.up.command_executor.register_command(
+        TutorialCommand.NAME, TutorialCommandHandler()
+    )</span>
+    return True</pre>
+    and the <code>_execute_stop</code> method of the <code>SubscribedModule</code>:
+    <pre>
+def _execute_stop(self):
+  super()._execute_stop()
+  <span class=modifiable-text>if self.__command_handle is not None:
+    self.up.command_executor.unregister_command(TutorialCommand.NAME, self.__command_handle)</span></pre>
+    </p>
+    <p>
+      <h5>Note: multiple subscribers for the same command are of course
+        possible. The <code>command_executor.register_command</code> returns a unique
+        <code>command_handle</code>, which is used when unregistering the command.
+        Only the handler with the specfied <code>command_handle</code> will be
+        unregistered, others remain untouched.</h5>
+    </p>
+        The <code>SubscribedModule</code> has registered for the <code>TutorialCommands</code>. If the
+        TutorialCommand will be published after the SubscribedModule has
+        started, the <code>run_action</code> of the
+        <code>TutorialCommandHandler</code> will be invoked.
+
+        <p>
+          As the last step we will create a module, which will publish the TutorialCommands.
+          First of all we have to create the PublisherModule. Execute:
+          <pre>
+$(up-env) up create module --name Publisher <span class="modifiable-text">--type thread</span> <span class="comment"> # the --type thread creates a module with spawned separate worker thread</span></pre>
+        The <code>--type thread</code> flag creates a ThreadedModule with a seprate worker thread. We will use this thread to publish the TutorialCommand each second.
+        </p>
+        <p>
+          Now let's edit the <code>Publisher</code>. Add the imports<pre>
+from time import sleep
+from commands.tutorial_command import TutorialCommand</pre>
+          modify the <code>_loop</code> method:
+          <pre>
+def _loop(self):
+  <span class="modifiable-text">while self._run:
+    cmd = TelemetryCommand()
+    self.up.command_executor.execute_command(cmd)
+    self.logger.info('TelemetryCommand published')
+    sleep(1)</span></pre>
+        The loop method will now publish the Telemetry command each second. Now
+        we have to edit the <code>TelemetryCommandHandler</code>. Modify the <code>run_action</code> method:
+        <pre>
+def run_action(self, command):
+        if command is not None:
+            self.logger.info('CMD received')
+            self.logger.info(command.data)</pre>
+        </p>
+        <p>
+          If you now run the application and examine the logs, you should see
+          the info messages from <code>TutorialCommandHandler</code> and
+          <code>PublisherModule</code>.
+        </p>
+        <h5>Note: Notice the threads in the log messages. The commands are
+          published from the <span class="modifiable-text">Thread-PublisherModule</span> and are
+          being executed by the <span class="modifiable-text">MainThread</span>.
+          Therefore the run-action method should not block the thread.
+        </h5>
+
         </section>
         <div w3-include-html="../menu.html"></div>
         <script>

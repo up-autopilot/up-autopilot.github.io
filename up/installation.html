@@ -97,7 +97,7 @@ source /usr/local/bin/virtualenvwrapper.sh</pre>
               Once you have configured the <code>virtualenv</code> we can
               create the virtual environment. Execute the following:
               <pre>
-$ mkproject <span class="modifiable-text">up-env</span> --python=python3.5 <span class="comment"># Creates a virtual environment and project with specified python interpreter</span>
+$ mkproject --python=python3.5 <span class="modifiable-text">up-env</span> <span class="comment"># Creates a virtual environment and project with specified python interpreter</span>
 $ workon <span class="modifiable-text">up-env</span> <span class="comment"># Activates the virtual environment</span></pre>
               Now you have the virtual env active. If you execute
               <pre>
@@ -111,7 +111,7 @@ Python 3.5.0</pre>
             <p>
               Once you have created the virtual env, we can install the <strong>Up</strong>. Execute the following:
               <pre>
-$(up-env) cd /path/to/project <span class="comment"># For example cd ~/projects/up-env</span>
+$(up-env) cdproject <span class="comment"># change dir to project</span>
 $(up-env) git clone https://github.com/up-autopilot/up.git up <span class="comment"># Obtain the sources</span>
 $(up-env) cd up
 $(up-env) python setup.py install <span class="comment"># Run the installation script</span></pre>
