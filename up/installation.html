@@ -112,9 +112,7 @@ Python 3.5.0</pre>
               Once you have created the virtual env, we can install the <strong>Up</strong>. Execute the following:
               <pre>
 $(up-env) cdproject <span class="comment"># change dir to project</span>
-$(up-env) git clone https://github.com/up-autopilot/up.git up <span class="comment"># Obtain the sources</span>
-$(up-env) cd up
-$(up-env) python setup.py install <span class="comment"># Run the installation script</span></pre>
+$(up-env) pip install --upgrade git+git://github.com/up-autopilot/up <span class="comment"># Install the Up sources</span>
               The installation script will install all required dependencies.
               Once the installation is finished, open python console
               <pre>
