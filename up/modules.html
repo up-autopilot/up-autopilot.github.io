@@ -29,7 +29,291 @@
     <div id="content-wrapper">
       <div class="inner clearfix">
         <section id="main-content">
+          <h2>The Basic Build Brick</h2>
+          <p>
+            As we have said in the
+            <a href="getting_started.html#modules">Getting Started</a> guide,
+            the modules are the basic build bricks of the <strong>Up</strong> applications. The
+            module have many roles in the <strong>Up</strong>:
+            <ul>
+              <li>reading some inputs (for example the PWM/PPM from receiver)</li>
+              <li>providing data to other modules (for example the altitude)</li>
+              <li>managing the communication channels (for example via the Internet)</li>
+              <li>control the servos</li>
+            </ul>
+            <p>
+              ... and much more. The module might require other module to be
+              operable, one module might serve as a data source for other
+              modules, or may provide certain services to other modules.
+            </p>
+          </p>
+          <h3>Creation of modules</h3>
+          <p>
+            The basic example of creating the module was explained in the
+            <a href="getting_started.html#create-module">Getting Started</a>
+            guide, but now we will take a more detailed look at the Modules
+            Creator.
+          </p>
+          <p>
+            To invoke the Modules creator run
+            <code>up create module &lt;OPTIONS&gt;</code> in the root of your
+            application. The available options are:
+            <ul>
+              <li>
+                <code>--name/-n</code> - specifies the name of the module
+                <ul>
+                  <li>
+                    ommit the 'Module' in the name, it will be added automatically
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <code>--type/-t</code> - specifies the type of the module (explained <a href="#types">later</a>), allowed options are:
+                <ul>
+                  <li>
+                    <code>thread</code>, which creates the <strong>Thread Module</strong>
+                  </li>
+                  <li>
+                    <code>started</code>, which creates the <strong>Started Module</strong>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </p>
+          <h2 id="types">Types of the Modules</h2>
+          <p>
+            The <strong>Up</strong> has two types of modules:
+            <ul>
+              <li>
+                Started Modules
+              </li>
+              <li>
+                Thread Modules
+              </li>
+            </ul>
+            <p>
+              The <strong>Started Module</strong> is the most basic module which has the following skeleton:
+            </p>
+            <pre>
+class StartedModule(BaseStartedModule):
+    def __init__(self):
+        super().__init__()
 
+    def _execute_initialization(self):
+        super()._execute_initialization()
+
+    def _execute_start(self):
+        super()._execute_start()
+        return True
+
+    def _execute_stop(self):
+        super()._execute_stop()
+
+    def load(self):
+        return True</pre>
+            <p>
+              The <strong>Thread Module</strong> is an extension of the Started Module which
+              spawns a <strong>new Thread</strong> in its <code>_execute_start</code>.
+              It has added a <code>_loop</code> method which is executed in
+              this Thread. The skeleton of the Thread Modules is following:
+            </p>
+            <pre>
+class ThreadModule(BaseThreadModule):
+    def __init__(self):
+        super().__init__()
+
+    def _execute_initialization(self):
+        super()._execute_initialization()
+
+    def _execute_start(self):
+        super()._execute_start()
+        return True
+
+    def _execute_stop(self):
+        super()._execute_stop()
+
+    def load(self):
+        return True
+
+    def _loop(self):
+        pass</pre>
+          </p>
+          <h2>The Modules Lifecycle</h2>
+          <p>
+            First of all we have to go throught the lifecycle of the module.
+          </p>
+          <h3>L0 - Discovery</h3>
+          <p>
+            Before anything is invoked, the module must be discovered.
+            Therefore all modules should be placed in the <code>modules</code>
+            folder. If you for some reasons have to place them
+            <strong>elsewhere</strong>, you have to modify the
+            <code>main.py</code> file. More precisely edit the call of the Up
+            constructor and set the <code>modules_path</code> to your dir and
+            the <code>modules_prefix</code>.
+          </p>
+          <pre>
+up = UpLoader(modules_path=<span class="modifiable-text">path/to/your/dir</span>, modules_prefix=<span class="modifiable-text">your.python.prefix</span>,
+              recorders_path=recorders_path, recorders_prefix='recorders',
+              flight_controller_path=fc_path, flight_controller_prefix='flight_controller'
+              ).create()</pre>
+          <p>
+            Be sure your dir exists and is accessible by the Up process.
+            However you should not be in need of this in most situations.
+          </p>
+          <p>
+            Make sure the <code>load</code> method of your module returns
+            True, otherwise it won't be loaded automatically.
+          </p>
+          <h3>L1 - Initialization</h3>
+          <p>
+            Once the module has been discovered, it is initialized.
+            The initialization phase is intended to make analyze the environment, prepare the module for start
+            (for example create the dirs, create sockets, but do not open
+            them, etc.). You should not start any logic and computation here.
+          </p>
+          <p>
+            The initialization is handled by the
+            <code>_execute_initialization</code> method, place your
+            initialization code there.
+          </p>
+          <h3>L2 - Start</h3>
+            <p>
+              After initialization the module is started. During the start you
+              should subscribe all required commands, open all required
+              communication channels, etc. After start the module remains in
+              this state till the stop of the application.
+            </p>
+            <p>
+              The start is handled by the <code>_execute_start</code> method, place your initialization code there.
+            </p>
+            <p>
+              The modules are required to return True/False value in the
+              <code>_execute_start</code>. This return value indicates whether
+              the start has been sucessful, or not.
+            </p>
+            <h5>Note: If a module fails to start, the <strong>Up</strong> will continue the startup and will work normally.</h5>
+            <p>
+              The <strong>Started Module</strong> does nothing very
+              interesting in this method, however the <strong>Thread Module</strong>
+              spawns and start its Thread here. After the
+              <code>super()._execute_start</code> the Thread is spawned and started.
+              The <code>_loop</code> method is set as <code>target</code> for
+              the spawned thread, so put the code which should be run in the
+              worker thread into this method.
+            </p>
+            <p>
+              After the return from the <code>_execute_start</code> both
+              Started and Thread Modules have the <code>self.started</code>
+              set to <code>True</code>. The <code>self.started</code> flag,
+              can be used for example in the following way:
+            </p>
+            <pre>
+def _loop(self):
+  while self.started:
+    # do something awesome</pre>
+          <p>
+            The <code>self.started</code> flag is unset during the stop phase.
+          </p>
+          <h3>L3 - Stop</h3>
+          <p>
+            When the Up application is about to terminate, it stops all the
+            modules. During the stop you shoul unregister all commands,
+            close all files, sockets, etc.
+          </p>
+          <p>
+            The stop is handled by the
+            <code>_execute_stop</code> method, place code which should be run
+            on stop there.
+          </p>
+          <h2>Threading</h2>
+          <p>
+            Everything is executed in <strong>one thread</strong>. The discovery, startup, stop.
+            Only exception (in context of modules) are the Thread Modules. Make
+            sure that if you invoke a method from the worker thread of the
+            Thread Module, your code is <strong>thread-safe</strong>. The
+            Commands are also being delivered on the <strong>main thread</strong>.
+          </p>
+          <p>
+            Keep this in mind when designing your modules. If you have
+            blocking tasks, use the Thread Module
+            (if blocking other modules is not what you want).
+          </p>
+          <h2>Useful commands</h2>
+          The modules has the following helper methods.
+          <h3>Up Reference</h3>
+          Each module has reference to the <strong>Up</strong> via the:
+          <pre>self.up</pre>
+          <p>
+            This reference is set in the
+            <code>_execute_initialization</code>.
+          </p>
+          <h3>Logger</h3>
+          <p>
+            Each module has also access to the default logger via the:
+          </p>
+          <pre>self.logger</pre>
+          <p>
+            The logger is set during the <code>__init__</code>. The logger supports these methods:
+          </p>
+          <ul>
+            <li><code>debug(message)</code></li>
+            <li><code>info(message)</code></li>
+            <li><code>warning(message)</code></li>
+            <li><code>error(message)</code></li>
+            <li><code>critical(message)</code></li>
+          </ul>
+          <p>
+            For more information about logs, read the <a href="up/logs.html">Logs</a>
+          </p>
+          <h3>Started flag</h3>
+          <p>
+            Both Started and Thread Modules have the started flag accessible via the:
+          </p>
+          <pre>self.started</pre>
+          <p>
+            This flag is <strong>set</strong> during the
+            <code>_execute_start</code> and <strong>unset</strong> during
+            the <code>_execute_stop</code>.
+          </p>
+          <h3>Obtaining Reference to Other Module</h3>
+            <p>
+              The modules (or more general every class which has reference to
+              the Up object) can obtain reference to other modules. To do so,
+              use the following:
+            </p>
+            <pre>self.up.get_module(<span class="modifiable-text">MODULE_CLASS</span>)</pre>
+            <p>
+              See the example in the <a href="getting_started.html#module-reference">Getting Started</a>.
+            </p>
+          <h3>Registering Commands</h3>
+          <p>
+            The modules (or more general every class which has reference to
+            the Up object) can register for command. To do so, use the following:
+          </p>
+          <pre>
+handle = self.up.commands_executor.register_command(<span class="modifiable-text">NAME_OF_THE_COMMAND</span>,
+                                                    <span class="modifiable-text">HANDLER_INSTANCE</span>
+                                                    )</pre>
+          <p>
+            The <code>self.up.commands_executor.register_command</code>
+            returns a <strong>unique</strong> handle, which will be used when
+            unregistering the command. To unregister a command use:
+          </p>
+          <pre>
+self.up.commands_executor.unregister_command(<span class="modifiable-text">NAME_OF_THE_COMMAND</span>, <span class="modifiable-text">HANDLE</span>)            
+</pre>
+          <p>
+            See the example in the <a href="getting_started.html#register-command">Getting Started</a>.
+          </p>
+          <h2>Overriding</h2>
+          <p>
+            Please note that you should call the <code>super().method()</code>
+            when overriding a method unless you know what are you doing.
+            Without the super call the module might enter an inconsistent
+            state (for example it has started sucesfully but the
+            <code>self.started</code> returns False).
+          </p>
         </section>
         <div w3-include-html="../menu.html"></div>
         <script>

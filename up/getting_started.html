@@ -63,7 +63,7 @@ $(up-env) up start <span class="comment"># up s can be used as shourtcut</span><
             It has just printed some messages. Let's do something more
             meaningful, but at first we have to go through the basic
             concepts of the <strong>Up</strong>.</p>
-          <h2>Modules</h2>
+          <h2 id="modules">Modules</h2>
           <p>
             Modules are the basic build bricks. If you want to controll the
             servos, you use a module, if you want to send message from the
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
           <p>
             Now we can create the module. Execute the following:
-            <pre>
+            <pre id="create-module">
 $(up-env) up generate module --name <span class="modifiable-text">HelloWorld</span></pre>
             This creates the <code>modules/hello_world_module.py</code> file with following content:
             <pre>
@@ -180,7 +180,7 @@ class HelloWorldModule(BaseStartedModule):
         The modules won't be much useful, if there is no built-in mechanism
         which passes messages between them. Luckily there are two possible ways
         how communication between modules can be achieved.
-        <h3>Obtaining Reference of Other Module</h3>
+        <h3 id="module-reference">Obtaining Reference of Other Module</h3>
         The first way is used for <strong>one to one</strong> communication
         model. Any module can obtain reference to any other module if it knows
         the target module class. Let's create another module. Create the
@@ -286,7 +286,7 @@ $(up-env) up create module --name Subscribed</pre>
         Now add the required imports:<pre>
 from commands.tutorial_command import TutorialCommand, TutorialCommandHandler</pre>
         and modify the <code>_execute_start</code> method of the <code>SubscribedModule</code>:
-        <pre>
+        <pre id="register-command">
 def _execute_start(self):
     super()._execute_start()
     <span class="modifiable-text">self.__command_handle = self.up.command_executor.register_command(
@@ -349,6 +349,12 @@ def run_action(self, command):
           being executed by the <span class="modifiable-text">MainThread</span>.
           Therefore the run-action method should not block the thread.
         </h5>
+        <h2>Level Completed</h2>
+        <p>
+          Congratulations, you have successfully completed the basics of the
+          <strong>Up</strong>. But there are of course more guides and docs to
+          read.
+        </p>
 
         </section>
         <div w3-include-html="../menu.html"></div>
