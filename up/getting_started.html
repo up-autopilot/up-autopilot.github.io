@@ -14,7 +14,7 @@
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
-    <title>Up Framework</title>
+    <title>Getting Started - Up</title>
   </head>
 
   <body>
@@ -333,7 +333,7 @@ def _loop(self):
     sleep(1)</span></pre>
         The loop method will now publish the Telemetry command each second. Now
         we have to edit the <code>TelemetryCommandHandler</code>. Modify the <code>run_action</code> method:
-        <pre>
+        <pre id="processing-command">
 def run_action(self, command):
         if command is not None:
             self.logger.info('CMD received')

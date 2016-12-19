@@ -14,7 +14,7 @@
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
-    <title>Up Framework</title>
+    <title>Modules - Up</title>
   </head>
 
   <body>
@@ -47,7 +47,7 @@
               modules, or may provide certain services to other modules.
             </p>
           </p>
-          <h3>Creation of modules</h3>
+          <h3>Creation of Modules</h3>
           <p>
             The basic example of creating the module was explained in the
             <a href="getting_started.html#create-module">Getting Started</a>
@@ -161,10 +161,10 @@ up = UpLoader(modules_path=<span class="modifiable-text">path/to/your/dir</span>
             Be sure your dir exists and is accessible by the Up process.
             However you should not be in need of this in most situations.
           </p>
-          <p>
-            Make sure the <code>load</code> method of your module returns
+          <h5>
+            Note: Make sure the <code>load</code> method of your module returns
             True, otherwise it won't be loaded automatically.
-          </p>
+          </h5>
           <h3>L1 - Initialization</h3>
           <p>
             Once the module has been discovered, it is initialized.
@@ -301,7 +301,7 @@ handle = self.up.commands_executor.register_command(<span class="modifiable-text
             unregistering the command. To unregister a command use:
           </p>
           <pre>
-self.up.commands_executor.unregister_command(<span class="modifiable-text">NAME_OF_THE_COMMAND</span>, <span class="modifiable-text">HANDLE</span>)            
+self.up.commands_executor.unregister_command(<span class="modifiable-text">NAME_OF_THE_COMMAND</span>, <span class="modifiable-text">HANDLE</span>)
 </pre>
           <p>
             See the example in the <a href="getting_started.html#register-command">Getting Started</a>.
@@ -313,6 +313,10 @@ self.up.commands_executor.unregister_command(<span class="modifiable-text">NAME_
             Without the super call the module might enter an inconsistent
             state (for example it has started sucesfully but the
             <code>self.started</code> returns False).
+          </p>
+          <p>
+            Be sure that your module has an empty constructor, otherwise it
+            cannot be instantiated via the autoload.
           </p>
         </section>
         <div w3-include-html="../menu.html"></div>
