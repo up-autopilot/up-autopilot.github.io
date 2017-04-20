@@ -1,0 +1,45 @@
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">up.registrar</span> <span class="kn">import</span> <span class="n">UpRegistrar</span>
+
+
+<span class="k">class</span> <span class="nc">Registrar</span><span class="p">(</span><span class="n">UpRegistrar</span><span class="p">):</span>
+    <span class="c"># Name of the config created for this Cog</span>
+    <span class="n">CONFIG_FILE_NAME</span> <span class="o">=</span> <span class="s">&#39;android.yml&#39;</span>
+
+    <span class="c"># Keys present in the config</span>
+    <span class="n">PORT_KEY</span> <span class="o">=</span> <span class="s">&#39;general port&#39;</span>
+    <span class="n">ORIENTATION_PORT_KEY</span> <span class="o">=</span> <span class="s">&#39;orientation port&#39;</span>
+    <span class="n">STOP_KEY</span> <span class="o">=</span> <span class="s">&#39;stop if orientation connection is lost&#39;</span>
+    <span class="n">STOP_DELAY_KEY</span> <span class="o">=</span> <span class="s">&#39;stop delay (s)&#39;</span>
+    <span class="n">ONBOARD_FORWARD_KEY</span> <span class="o">=</span> <span class="s">&#39;forward interval for onboard device (ms)&#39;</span>
+
+    <span class="c"># Default config content</span>
+    <span class="n">CONFIG_TEMPLATE</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="si">%s</span><span class="s">: 50001</span>
+<span class="si">%s</span><span class="s">: 50000</span>
+<span class="si">%s</span><span class="s">: True</span>
+<span class="si">%s</span><span class="s">: 10</span>
+<span class="si">%s</span><span class="s">: 500</span>
+<span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">PORT_KEY</span><span class="p">,</span> <span class="n">ORIENTATION_PORT_KEY</span><span class="p">,</span> <span class="n">STOP_KEY</span><span class="p">,</span> <span class="n">STOP_DELAY_KEY</span><span class="p">,</span> <span class="n">ONBOARD_FORWARD_KEY</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&#39;android_cog&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># Loads the external_modules.yml file of your app </span>
+        <span class="n">external_modules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_external_modules</span><span class="p">()</span>
+
+        <span class="c"># check whether the config has been successfully loaded</span>
+        <span class="k">if</span> <span class="n">external_modules</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c"># Writes the registered Modules from the registered_modules.yml of the Cog</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_register_modules_from_file</span><span class="p">()</span>
+            
+            <span class="c"># Creates a YAML config with file name CONFIG_FILE_NAME and content CONFIG_TEMPLATE</span>
+            <span class="c"># if such file exists, is is NOT modified</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CONFIG_FILE_NAME</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CONFIG_TEMPLATE</span><span class="p">)</span>
+            
+            <span class="c"># Indicates everything was registered</span>
+            <span class="k">return</span> <span class="bp">True</span>
+    
+        <span class="c"># Indicates there has been an error during registration</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</pre></div>

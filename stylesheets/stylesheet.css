@@ -897,8 +897,12 @@ ul li:before {
     color: #9ddcff;
 }
 
-ul li.bold {
+ul li.bold, span.bold {
   font-weight: bold;
+}
+
+ul li.normal, span.normal {
+  font-weight: normal;
 }
 
 ul li.spaced {
@@ -939,4 +943,10 @@ span.comment {
 
 span.modifiable-text {
   color: #bd0000;
+}
+
+code {
+    padding: 0 3px;
+    background-color: rgba(255, 106, 0, 0.2);
+    border: solid 1px rgb(255, 106, 0);
 }

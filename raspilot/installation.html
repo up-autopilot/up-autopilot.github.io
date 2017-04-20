@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="../stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/print.css" media="print">
+    <script src="/javascripts/html-include.js"></script>
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Raspilot | Installation</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Installation</h1>
+        <h2>The Modular Autopilot for RC Airplanes</h2>
+        <a href="https://github.com/up-autopilot" class="button"><small>Follow me on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>Prerequisites</h1>
+          <p>
+            The Raspilot requires the <strong>Up</strong> to be properly <a href="/up/installation.html">installed</a> and running on the target device. This implies the presence of Python 3.5 installation
+          </p>
+          <p>
+            <strong>It is strongly recommended</strong> that you familiarize yourself with the <strong>Up</strong> before installing the Raspilot.
+          </p>
+          <h1>Installation</h1>
+          <p>
+            The Raspilot itself is currently a wrapper around several <a href="up/cogs.html">Cogs</a>. This might be changed in the future, but for now, all of the Raspilot's features has been extracted into particular cogs.
+          </p>
+          <p>
+            Raspilot uses these Cogs:
+            <ul>
+              <li>
+                <a href="#">Android Cog</a> - to communicate with the airborne Android
+              </li>
+              <li>
+                <a href="#">Arduino Cog</a> - to communicate with the airborne Arduino
+              </li>
+              <li>
+                <a href="#">Discovery Cog</a> - enables the airborne Android to discovery the runnig Raspilot instance
+              </li>
+              <li>
+                <a href="#">Mission Control Cog</a> - to communicate with the ground station
+              </li>
+              <li>
+                <a href="#">Load Guard Cog</a> - watchdog which checks the hardware resource consumption of the Raspilot
+              </li>
+            </ul>
+          </p>
+          <p>
+            <strong>It is strongly recommended</strong> that you familiarize yourself with these <strong>Cogs</strong> before installing the Raspilot.
+          </p>
+          <p>
+            The installation is therefore quite simple:
+          </p>
+          <pre>
+$(up-env) git clone https://github.com/Rashitko/Raspilot.git
+$(up-env) cd Raspilot
+$(up-env) pip install .                  <span class="comment"># you might add the -e to install in development mode</span>
+$(up-env) raspilot install               <span class="comment"># downloads, installs and register all required Cogs</span></pre>
+          <p>
+            <strong>Raspilot</strong> is now installed, all <strong>Cogs</strong> are registered, but we have some configuration to do. Once you have properly configured the Raspilot, run the following in root of the Raspilot to run it:
+            <pre>
+$(up-env) up s</pre>
+          </p>
+          <h1>Configuration</h1>
+          <p>
+            All configuration files are placed under <code>Raspilot/config</code>. Some of them are ready to be used, some of them requires additional information.
+          </p>
+          <h2>Main Config and Disabled Modules</h2>
+          <p>
+            The main configuration content which is applicable to whole application is saved in the <code>config.yml</code>. Currently you can change only the log level :).
+          </p>
+          <p>
+            The <code>disabled_modules.yml</code> contains enumeration of Modules, which should not be loaded during startup. Use fully qualified names of disabled Modules, such as: <pre>up.modules.up_heading_provider.UpHeadingProvider</pre>
+          </p>
+
+          <h2>Android Config</h2>
+          <p>
+            You <strong>shouldn't need to change anything</strong> in this config, but here is its  brief explanation.
+          </p>
+          <p>
+            The <code>general port</code> and <code>orientation port</code> keys specify the ports, which are used for orientation forwarding and general communication. You should not change them, unless you change them in the Andorid application as well.
+          </p>
+          <p>
+            The <code>stop if orientation connection is lost</code> key should be set to <code>False</code>, if you don't want the Raspilot to automatically stop, when the Arduino disconnects. The <code>stop delay (s)</code> defines timeout in seconds after which the Raspilot stops itself.
+          </p>
+          <p>
+            The <code>forward interval for onboard device (ms)</code> key defines how often will be the data from Raspberry be forwarded to the airborne Android. Does not impact the frequency of telemetry.
+          </p>
+
+          <h2>Arduino Config</h2>
+          <p>
+            The Arduino's configuration files has two keys, which specifies the baudrate and the port where Arduino is connected. Set the port accordingly to your system. If you connect Arduino directly to UART pins of Rasperry (<strong>do not forget</strong> proper level shifters!), the port should be set to: <pre>port: /dev/ttyAMA0</pre>
+          </p>
+
+          <h2>PIDs Config</h2>
+          <p>
+            The <code>pids.yml</code> contains tuning parameters for all PID controllers used by Raspilot. You should change PIDs via the Android application, but you can also edit this file manually. Just keep in mind, that when Raspilot exits, it writes the currently set PIDs to this file so thay can be set during following star.
+          </p>
+
+
+          <h2>Load Guard Config</h2>
+          <p>
+            In the Load Guard's config specifies the values when to enter and when to exit the <strong>Panic Mode</strong>. In Panic Mode the communication between onboard devices is reduced in order to lower the CPU load of the Raspberry Pi. The default values should be adequate, but you can change them if you want to.
+          </p>
+
+          <h2>Mission Control Config</h2>
+          <p>
+            Specifies the <code>url</code> and <code>port</code> of the <strong>proxy server</strong> used to exchange data between Raspilot and ground device. Set the accordingly to your setup. Usually the Raspberry connects to port <code>3003</code> and ground device to port <code>3004</code>
+          </p>
+
+          <h1>Troubleshooting</h1>
+          <p>
+            Here we will try to solve frequent issues with the Raspilot.
+          </p>
+          <h3>Android</h3>
+          If your Android device cannot discover the Raspilot, make sure they are on the same network. Frequent mistake is that the tethering isn't enabled on the Android. Also some networks blocks the broadcasts which are required for the discovery process, but this shouldn't be the case of the network created by tethering.
+          <h3>Arduino</h3>
+          If you connect the Arduino directly to the UART pins of the Raspberry, make sure, you connect the Arduino before you power up the Raspberry, otherwise the Arduino won't be accessible.
+          <h3>Mission Control</h3>
+          If you cannot connect to the proxy server, make sure you have Internet connection and proper port and url set in the configs.
+
+        </section>
+        <div w3-include-html="../menu.html"></div>
+        <script>
+        w3IncludeHTML();
+        </script>
+      </div>
+      <footer>This page is using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</footer>
+    </div>
+
+
+  </body>
+</html>

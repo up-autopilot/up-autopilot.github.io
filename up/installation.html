@@ -37,7 +37,8 @@
             This will guide you throught installation process of the
             <strong>Up</strong> Framework.<strong>Up</strong> uses the Python
             3.5. This guide utilizes the <code>pip</code> and
-            <code>virtualenv</code> tools.
+            <code>virtualenv</code> tools. If you receive any <code>Permission denied</code>
+            errors during installation, try to execute with <code>sudo</code>
           </p>
 
           <h2>pip Installation</h2>
@@ -50,15 +51,17 @@
           If you need to install pip execute following commands:
           <pre>
 cd ~
-wget https://bootstrap.pypa.io/get-pip.py
+curl -O https://bootstrap.pypa.io/get-pip.py
 python get-pip.py</pre>
           <h2>virtualenv Installation</h2>
           If you do not have virtualenv already installed, execute following:
           <pre>
-$ pip install virtualenv, virtualenvwrapper</pre>
-          If you get the <code>Permission denied</code> error during
-          installation run the commands with <code>sudo</code> <br/>
-          or append <code>--user</code>.
+$ pip install virtualenv
+$ pip install virtualenvwrapper</pre>
+          <p>
+            If you encounter <code>Operation not permitted</code> error during installation of virtualenvwrapper (for example on Mac OS X), run the following:
+          </p>
+          <pre>$ pip install --ignore-installed six virtualenvwrapper</pre>
 
           <h2>Python 3.5</h2>
           The <strong>Up</strong> requires Python 3.5. Installation of the
@@ -69,13 +72,13 @@ $ pip install virtualenv, virtualenvwrapper</pre>
           <p>
             <pre>
 $ cd ~ <span class="comment"># Move to home dir</span>
-$ wget https://www.python.org/ftp/python/3.5.0/Python-3.5.0.tgz <span class="comment"># Download the source</span>
+$ curl -O https://www.python.org/ftp/python/3.5.0/Python-3.5.0.tgz <span class="comment"># Download the source</span>
 $ tar -zxvf Python-3.5.0.tgz <span class="comment"># Extract the source</span>
 $ cd Python-3.5.0 <span class="comment"># Move to extracted folder</span>
 $ ./configure <span class="comment"># Configure, takes few minutes</span>
-$ make <span class="comment"># Build, takes ca. 30 minutes</span>
+$ make <span class="comment"># Make, takes ca. 30 minutes on Raspberry Pi B+</span>
 $ sudo make install <span class="comment"># Install, takes few minutes</span></pre>
-            Test the installation with <pre>$ python3.5 --version</pre> which should give something like <pre>Python 3.5.0</pre>
+            Test the installation with <pre>$ python3.5 --version</pre> which should give: <pre>Python 3.5.0</pre>
           </p>
 
           <h2>Creating virtualenv for the <strong>Up</strong></h2>
@@ -83,7 +86,7 @@ $ sudo make install <span class="comment"># Install, takes few minutes</span></p
               You should have installed Python 3.5, <code>virtualenv</code> and
               <code>virtualenvwrapper</code>. Now we need to configure the virtualenvwrapper.
                Add these three lines to your shell startup script
-               (<code>.bashrc</code> or <code>.bash_profile</code>):
+               (<code>~/.bashrc</code> or <code>~/.bash_profile</code>):
                <pre>
 export WORKON_HOME=$HOME/<span class="modifiable-text">.virtualenvs</span>
 export PROJECT_HOME=$HOME/<span class="modifiable-text">projects</span>
@@ -92,6 +95,10 @@ source /usr/local/bin/virtualenvwrapper.sh</pre>
                The <code>PROJECT_HOME</code> will store all the projects. You
                can use whatever folder name and path you like, just make sure
                the folders exist.
+            </p>
+            <p>
+              Now let's apply those changes:
+              <pre>$ source ~/.bash_profile <span class="comment"># or ~/.bashrc</span></pre>
             </p>
             <p>
               Once you have configured the <code>virtualenv</code> we can
@@ -112,7 +119,12 @@ Python 3.5.0</pre>
               Once you have created the virtual env, we can install the <strong>Up</strong>. Execute the following:
               <pre>
 $(up-env) cdproject <span class="comment"># change dir to project</span>
-$(up-env) pip install --upgrade git+git://github.com/up-autopilot/up <span class="comment"># Install the Up sources</span></pre>
+$(up-env) git clone https://github.com/Rashitko/up.git <span class="comment"># clone the sources</span>
+$(up-env) cd up
+$(up-env) python setup.py develop <span class="comment"># or python setup.py install for normal install mode</span></pre>
+              <p>
+                There might be an error regarding installation of <code>Twisted</code>. Refer to <a href="#install-twisted">Installing Twisted from Sources</a> for troubleshooting.
+              </p>
               The installation script will install all required dependencies.
               Once the installation is finished, open python console
               <pre>
@@ -126,6 +138,15 @@ $(up-env) python</pre>
             <p>
               Refer to other sections for more information about how to use the newly installed <strong>Up</strong>.
             </p>
+            <h2 id="install-twisted">Installing <strong>Twisted</strong> from Sources</h2>
+            The <strong>Twisted</strong> is a library used by the <strong>Up</strong> to handle the networking. It might <em>fail</em> to instal via <code>pip</code>. Then you need to install it from sources.
+            <pre>
+$(up-env) cd <span class="modifiable-text">/path/where/twisted/sources/should/be/installed</span>
+$(up-env) curl -O https://twistedmatrix.com/Releases/Twisted/17.1/Twisted-17.1.0.tar.bz2
+$(up-env) tar xvjf Twisted-17.1.0.tar.bz2
+$(up-env) cd Twisted-17.1.0
+$(up-env) python setup.py install</pre>
+          Wait for installation to complete. This can take <strong>several minutes</strong> (on Raspberry much more). Installation should complete without any errors. <strong>Twisted</strong> is now installed and can be used by the <strong>Up</strong>.
         </section>
         <div w3-include-html="../menu.html"></div>
         <script>

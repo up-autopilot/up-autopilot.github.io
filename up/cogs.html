@@ -1,0 +1,171 @@
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="../stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/pygmentize.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/print.css" media="print">
+    <script src="/javascripts/html-include.js"></script>
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Cogs</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Cogs</h1>
+        <h2>The Modular Framework for Creating Autopilot Solutions</h2>
+        <a href="https://github.com/up-autopilot/up" class="button"><small>Follow me on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+
+          <h1>Plug-in modules</h1>
+          <p>
+            Besides the highly specialized custom created <strong>Modules</strong>, <strong>Commands</strong> and <strong>Handlers</strong>, there are many features, which might be used by other users as well. For example you use Arduino to handle the low level tasks, such as PWM readings. And you have created a nice communication protocol between the Arduino app and <strong>Up</strong>. It would be nice to have an option to pack this feature into an plug-in module, which can be used by others or in your other application. That's why the <strong>Up</strong> contains the <strong>Cogs</strong>.
+          </p>
+          <p>
+            The <strong>Cog</strong> is a common Python library, which can be shipped and installed for example via <code>pip</code>. Dependencies are handled as in any other Python library. But because we want it to integrate with the <strong>Up</strong>, it must contain some extras.
+          </p>
+
+          <h1>Structure</h1>
+          Each cog must follow this structure:
+          <pre>
+<span class="modifiable-text">my_cog</span>/
+  modules/
+  commands/
+  <span class="comment">...other_custom_python_modules/...</span>
+  registrant.py
+  registered_modules.yml
+  <span class="comment">...other_custom_files(such as setup.py, etc.)...</span></pre>
+          <p>
+            As you have guessed the <code>modules/</code> contains Modules implemented in this <strong>Cog</strong> and the <code>commands/</code> contains Commands and Handlers.
+          </p>
+          <p>
+            New are the <code>registrant.py</code> and <code>registered_modules.yml</code> files. The first one contains a <em>special class</em> used during integration of the Cog into your application and the <code>.yml</code> file contains some <em>configuration data</em> required to make the integration possible.
+          </p>
+          <p>
+            But at first we will look at the integration process flow.
+          </p>
+          <h2>Integration Flow</h2>
+          <p>
+            When you want to integrate the <strong>Cog</strong> into your application you need to do the following:
+            <ul>
+              <li>
+                download the <strong>Cog</strong>
+              </li>
+              <li>
+                install the <strong>Cog</strong>
+              </li>
+              <li>
+                integrate the <strong>Cog</strong>
+                <ul>
+                  <li>
+                    this involves some automatic changes in app's configs, creation of config and other files required by the <strong>Cog</strong>, etc.
+                  </li>
+                </ul>
+              </li>
+            </p>
+            <p>
+              The first two steps are identical as with any other Python library. You download and install the Cog either via <code>pip</code>, from sources, or possibly in some other way.
+            </p>
+            <p>
+              The integration part is when the fun starts. We need to make your application aware of what <strong>Modules</strong> are defined in the <strong>Cog</strong>, so your application can load an instantiate them. This is handled by the <code>Registrant</code> with the help of <code>registered_modules.yml</code> config.
+            </p>
+          </ul>
+          <h2>Registrant</h2>
+          <p>
+            Each <strong>Cog</strong> <em><strong>must</strong></em> contain the <code>registrant.py</code> file, which contains the following class:
+          </p>
+          <ol>
+            <li>Class <em><strong>must</strong></em> be named <code>Registrant</code></li>
+            <li>Class <em><strong>must</strong></em> extend the <code>up.registrant.UpRegistrant</code></li>
+            <li>
+              Class <em><strong>must</strong></em> must define method <code>register()</code>
+            </li>
+          </ol>
+          <p>
+            Let's create a simple Registrant.
+          </p>
+          <div w3-include-html="../snippets/dummy_registrar.html"></div>
+          <p>
+            The arg in super call of <code>__init__</code> should match the name of the <strong>Cog</strong> as it will identify this <strong>Cog</strong> in app's configs etc.
+          </p>
+          <p>
+            The <code>register</code> method should return a boolean indicating whether the <strong>Cog</strong> has been registered successfully or not.
+          </p>
+          <p>
+            This is a very simple example of <strong>Registrant</strong> in <strong>Cog</strong> which does not define any modules which should be registered. Let's review the <code>registered_modules.yml</code> file so we can show a more complex example.
+          </p>
+
+          <h3>registered_modules.yml</h3>
+          <p>
+            <strong><em>All</em></strong><em> of</em> the <strong>Cog's Modules</strong> which should be loaded during app startup must be defined in the <code>registered_modules.yml</code> file. Let's see an example of such file (taken from the Android Cog):
+          </p>
+          <div w3-include-html="../snippets/registered_modules.html"></div>
+          <p>
+            The <code>class_name</code> must <em><strong>match exactly</strong></em> the name of the class defined in particular module. The <code>prefix</code> is a python module prefix. The result of joining the <code>prefix</code> and <code>class_name</code> must give the <em><strong>fully qualified class name</strong></em>, which can be imported and instantiated.
+          </p>
+          <p>
+            Luckily you don't have to generate this file manually. Simply invoke <pre>$(up-env) up explore -w</pre> in the <strong>root</strong> of your <strong>Cog</strong>. This discovers <strong>all</strong> defined modules. The <code>-w</code> switch writes the result into the <code>registered_modules.yml</code>.
+          </p>
+
+          <h3>Register the Cog</h3>
+          If your <strong>Cog</strong> defines <strong>Modules</strong> which should be registered, you have to write them to the <code>external_modules.yml</code> file of <strong>your application</strong> (present in the root of your application). This should be done in the <code>register</code> method of the Cog's Registrant. The <code>UpRegistrant</code> provides several helper methods for this process. Let's see a more complex example(also taken from the AndroidCog):
+          <div w3-include-html="../snippets/android_registrant.html"></div>
+          <p>
+            Now when the <code>Registrant</code> is ready, we can register the <code>Cog</code>. To do so, execute in <strong>root of your application</strong>:
+          </p>
+          <pre>$(up-env) up register -n <span class="modifiable-text">cog_name</span></pre>
+          <p>
+            The <code>cog_name</code> <strong><em>must match exactly</em></strong> the name of the <strong>python package</strong> (the string arg in <code>__init__</code> might although should not differ). You should see a similar output:
+          </p>
+          <pre>
+Registering android_cog
+	[INFO] - Working with external_modules file at '<span class="modifiable-text">/path/to/your/app/</span>external_modules.yml'
+	[INFO] - Registering android_cog.modules.android_battery_module.AndroidBatteryProvider
+	[INFO] - Registering android_cog.modules.android_module.AndroidProvider
+	[INFO] - Registering android_cog.modules.android_orientation_module.AndroidOrientationProvider
+	[INFO] - Creating android.yml at '<span class="modifiable-text">/path/to/your/app/</span>config/android.yml'
+	[OK] - Module android_cog registered</pre>
+          <p>
+            If you review the <code>external_modules.yml</code> of your application, you should see a new section containting the newly registered modules. Also there should be a new file at <code>config/android.yml</code>.
+          </p>
+          <h3>Registering Alredy Registered Cog</h3>
+          <p>
+            If you run the registrar another time, you will see a slightly different output.
+          </p>
+          <pre>
+Registering android_cog
+	[INFO] - Working with external_modules file at '<span class="modifiable-text">/path/to/your/app/</span>external_modules.yml'
+	[WARNING] - android_cog.modules.android_battery_module.AndroidBatteryProvider already registered
+	[WARNING] - android_cog.modules.android_module.AndroidProvider already registered
+	[WARNING] - android_cog.modules.android_orientation_module.AndroidOrientationProvider already registered
+	[WARNING] - Config android.yml at <span class="modifiable-text">/path/to/your/app/</span>config/android.yml already exists
+	[OK] - Module android_cog registered</pre>
+        <p>
+          The warnings about classes already registered can be ignored. One about the existing config also. It is important to know that if you run the Registrant <em>multiple times</em>, it won't override the existing Cog's configs, etc. However if you <strong>update</strong> your Cog and add a <strong>new module</strong>, this module <strong>will be registered</strong> properly. Also a <strong>newly added</strong> configs <strong>will be created</strong>.
+        </p>
+
+        </section>
+        <div w3-include-html="../menu.html"></div>
+        <script>
+        w3IncludeHTML();
+        </script>
+      </div>
+      <footer>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</footer>
+    </div>
+
+
+  </body>
+</html>

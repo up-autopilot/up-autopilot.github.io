@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="../stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/print.css" media="print">
+    <script src="/javascripts/html-include.js"></script>
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Raspilot</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Raspilot for Raspberry</h1>
+        <h2>The Modular Autopilot for RC Airplanes</h2>
+        <a href="https://github.com/up-autopilot" class="button"><small>Follow me on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h2>
+              <a id="welcome-to-raspilot" class="anchor" href="#welcome-to-up" aria-hidden="true">
+                <span aria-hidden="true" class="octicon octicon-link"></span></a>
+                Welcome to the Raspilot
+              </h2>
+
+              <p>The <strong>Raspilot</strong> is a modular autopilot systems for the RC models intented for use on the Raspberry Pi.</p>
+              <h2>
+                <a id="purpose" class="anchor" href="#purpose" aria-hidden="true">
+                  <a id="welcome-to-up" class="anchor" href="#welcome-to-up" aria-hidden="true">
+                    <span aria-hidden="true" class="octicon octicon-link"></span></a>
+                    Purpose
+              </h2>
+              <p>The <strong>Raspilot</strong> has been created as a proof of concept of the <strong>Up</strong> framework.</p>
+              <p>It has been created as a part of the Master's Thesis on the Charles University.</p>
+
+              <h2>
+                <a id="idea" class="anchor" href="#idea" aria-hidden="true">
+                  <span aria-hidden="true" class="octicon octicon-link"></span></a>
+                  The Idea
+              </h2>
+              <p>
+                The main idea of the <strong>Raspilot</strong> is proove the ability of the <strong>Up</strong> to integrate data sources in order to be able to control the aircraft and provide reliable telemetry source.
+              </p>
+              <p>
+                It is a system, which can handle the following use cases:
+                <ul>
+                  <li>
+                    transmit telemetry to the ground station
+                  </li>
+                  <li>
+                    stabilize the aircraft
+                  </li>
+                  <li>
+                    communication with the ground station
+                  </li>
+                </ul>
+              </p>
+              <h2>
+                <a id="attributes" class="anchor" href="#attributes" aria-hidden="true">
+                  <span aria-hidden="true" class="octicon octicon-link"></span></a>
+                  The Required Peripherals
+              </h2>
+              <p class="no-margin"> The <strong>Raspilot</strong> requires several peripherals in addition to the Raspberry Pi:
+                <ul>
+                  <li class="bold spaced">
+                    Arduino <span class="normal">- Use <a href="#">Raspilot for Arduino</a></span>
+                    <ul>
+                      <li class="normal">
+                        reads RX and IMU, controls the airplane's attitude
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="bold spaced">
+                    Android <span class="normal">- Use <a href="#">Raspilot for Android</a></span>
+                    <ul>
+                      <li class="normal">
+                        reads various sensors, provides GPS and Internet connection
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="bold spaced">
+                    Proxy Server <span class="normal">- Use <a href="#">Up Proxy Application</a></span>
+                    <ul>
+                      <li class="normal">
+                        exchanges data between Raspberry Pi and ground station, must be run on a machine with <strong>public</strong> IP address
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </p>
+        </section>
+        <div w3-include-html="../menu.html"></div>
+        <script>
+        w3IncludeHTML();
+        </script>
+      </div>
+      <footer>This page is using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</footer>
+    </div>
+
+
+  </body>
+</html>
